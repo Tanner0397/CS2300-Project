@@ -18,6 +18,8 @@ class Node
 protected:
   std::vector<unsigned int> keys;
 private:
+  unsigned int id;//unique Id used for printing.
+  bool marked;//Mark all the
   unsigned int numKeys;
   Node* childNodes[TREE_ORDER];//Array of pointers to children
   Node* parent;
@@ -38,7 +40,11 @@ public:
   void setChild(Node* node, int index);
   void setParent(Node* node);
   void insertChild(Node* node);
-  std::string print(int num);
+  std::string print();
+  unsigned int getID();
+  void mark();//For BFS
+  void unmark();
+  bool isMarked();
 };//End of class Node
 
 class leafNode : public Node //leafNode inherits from Node
@@ -66,7 +72,8 @@ struct BPlusTree
   void insert(Node* node, unsigned int const key);
   void split(Node* node, unsigned int const key);
   void del(unsigned int key);
-  void iteratePrint(Node* node, std::ofstream &buffer, int &index);
+  void outputNodes(Node* node, std::ofstream &buffer);
+  void outputLinks(Node* node, std::ofstream &buffer);
   void print();
 
 };//end of BPlusTree struct

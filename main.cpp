@@ -12,8 +12,15 @@ int main()
   tree.insertKey(4);
   tree.insertKey(11);
   tree.insertKey(12);
-  //tree.insertKey(2);
-  cout << tree.root->getChild(0)->getKey(0) << endl;
-  cout << tree.root->getNumKeys() << endl;
+  tree.insertKey(2);
+  tree.insertKey(7);
+  tree.insertKey(8);
+  tree.insertKey(13);
+  tree.insertKey(16);
+  tree.insertKey(5);
+  tree.insertKey(14);
+  tree.insertKey(18);
+  tree.insertKey(20);
+  tree.insertKey(25);
   tree.print();
 }//end main

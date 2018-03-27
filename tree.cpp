@@ -4,6 +4,9 @@
 
 Node::Node()//Constructor
 {
+  static unsigned int m_id = 0;//Used for auto incrementing id
+  id = m_id++;
+  marked = false;
   numKeys = 0;//First its empty
   for(unsigned int i = 0; i < TREE_ORDER; i++)
   {
@@ -148,10 +151,30 @@ void Node::insertChild(Node* node)
   }//end else
 }//end arrangeChildren Method
 
-std::string Node::print(int num)
+unsigned int Node::getID()
+{
+  return id;
+}
+
+void Node::mark()
+{
+  marked = true;
+}
+
+void Node::unmark()
+{
+  marked = false;
+}
+
+bool Node::isMarked()
+{
+  return marked;
+}
+
+std::string Node::print()
 {
   std::string buffer;
-  buffer += ("node" + std::to_string(num) + " [label = \"");
+  buffer += ("node" + std::to_string(id) + " [label = \"");
   for(unsigned int i = 0; i < TREE_ORDER-1; i++)
   {
     if(i < keys.size())
@@ -274,13 +297,14 @@ void BPlusTree::split(Node* node, unsigned int const key)
         parent->insertKey(copy[1]);//insert the second key of the copy vector
         parent->insertChild(newLeaf);
       }
+      else
+      {
+        split(parent, copy[1]);//This will be an internal node
+        parent = node->getParent();
+        parent->insertChild(newLeaf);
+        newLeaf->setParent(parent);
+      }
     }//end if
-    else if(node != root && parent->isFull())
-    {
-      //The parent node is full, so that also needs to be split
-      split(parent, copy[2]);//This will be an internal node
-      //Do Stuff------------------------
-    }
     else if(node == root)
     {
       Node* newRoot = new Node();
@@ -290,7 +314,7 @@ void BPlusTree::split(Node* node, unsigned int const key)
       node->setParent(newRoot);
       newLeaf->setParent(newRoot);
       root = newRoot;//Set the new root
-    }
+    }//end else if root
   }//end ifLeaf
   else//This is an internal node
   {
@@ -299,8 +323,14 @@ void BPlusTree::split(Node* node, unsigned int const key)
     newNode->insertKey(copy[2]);
     newNode->insertKey(copy[3]);//insert last 2 keys in the last node
     newNode->setParent(parent);
+    newNode->setChild(node->getChild(2), 0);
+    newNode->setChild(node->getChild(3), 1);
+    newNode->getChild(0)->setParent(newNode);
+    newNode->getChild(1)->setParent(newNode);
     node->deleteKeyIndex(LAST_KEY);//
     node->deleteKeyIndex(LAST_KEY-1);//internel nodes don't need a redundant entry
+    node->setChild(nullptr, 2);//No children here any more since they moved
+    node->setChild(nullptr, 3);
     if(node != root && !parent->isFull())
     {
       parent->insertKey(copy[1]);//the second key
@@ -310,7 +340,8 @@ void BPlusTree::split(Node* node, unsigned int const key)
     {
       //The parent node is full, so that also needs to be split
       split(parent, copy[1]);//This will be an internal node
-      //Do Stuff------------------------
+      parent = node->getParent();
+      parent->insertChild(newNode);
     }//end else parent is full
     else if(node == root)
     {
@@ -344,45 +375,39 @@ void BPlusTree::insertKey(unsigned int const key)
   BPlusTree::insert(root, key);
 }//end insert key method
 
-void BPlusTree::iteratePrint(Node* node, std::ofstream &buffer, int &index)
+void BPlusTree::outputNodes(Node* node, std::ofstream &buffer)
 {
-  int counter = 0;
-  //buffer += node->print(index);
-  if(node->getChild(0) != nullptr)
-  {
-    buffer << node->getChild(0)->print(index+1);
-    buffer << "node" << std::to_string(index) << ":f0->node" << std::to_string(index+1) << "\n";
-    counter++;
-  }
-  if(node->getChild(1) != nullptr)
-  {
-    buffer << node->getChild(1)->print(index+2);
-    buffer << "node" << std::to_string(index) << ":f1->node" << std::to_string(index+2) << "\n";
-    counter++;
-  }
-  if(node->getChild(2) != nullptr)
-  {
-    buffer << node->getChild(2)->print(index+3);
-    buffer << "node" << std::to_string(index) << ":f2->node" << std::to_string(index+3) << "\n";
-    counter++;
-  }
-  if(node->getChild(3) != nullptr)
-  {
-    buffer << node->getChild(3)->print(index+4);
-    buffer << "node" << std::to_string(index) << ":f2->node" << std::to_string(index+4) << "\n";
-    counter++;
-  }//Done printing off children
-  //--------------------------------------------------------
-  index += counter;
-  if(node->getChild(0) != nullptr)
-    iteratePrint(node->getChild(0), buffer, index);
-  if(node->getChild(1) != nullptr)
-    iteratePrint(node->getChild(1), buffer, index);
-  if(node->getChild(2) != nullptr)
-    iteratePrint(node->getChild(2), buffer, index);
-  if(node->getChild(3) != nullptr)
-    iteratePrint(node->getChild(3), buffer, index);
+  if(node == nullptr)
+    return;
+  outputNodes(node->getChild(0), buffer);
+  outputNodes(node->getChild(1), buffer);
+  if(!node->isMarked())
+    buffer << node->print();
+  node->mark();
+  outputNodes(node->getChild(2), buffer);
+  outputNodes(node->getChild(3), buffer);
+
 }//end print method
+
+void BPlusTree::outputLinks(Node* node, std::ofstream &buffer)
+{
+  if(node==nullptr)
+    return;
+  outputLinks(node->getChild(0),buffer);
+  outputLinks(node->getChild(1),buffer);
+  //LINK
+  node->unmark();
+  if(node->getChild(0) != nullptr)
+    buffer << "node" << node->getID() << ":f0 -> node" << node->getChild(0)->getID() << '\n';
+  if(node->getChild(1) != nullptr)
+    buffer << "node" << node->getID() << ":f1 -> node" << node->getChild(1)->getID() << '\n';
+  if(node->getChild(2) != nullptr)
+    buffer << "node" << node->getID() << ":f2 -> node" << node->getChild(2)->getID() << '\n';
+  if(node->getChild(3) != nullptr)
+    buffer << "node" << node->getID() << ":f3 -> node" << node->getChild(3)->getID() << '\n';
+  outputLinks(node->getChild(2),buffer);
+  outputLinks(node->getChild(3),buffer);
+}
 
 void BPlusTree::print()
 {
@@ -390,8 +415,9 @@ void BPlusTree::print()
   std::ofstream buffer;
   buffer.open("output.gv");
   buffer << "digraph {\n node [ shape = record]\n";
-  buffer << root->print(index) << std::endl;
-  iteratePrint(root, buffer, index);
+  //buffer << root->print(index) << std::endl;
+  outputNodes(root, buffer);
+  outputLinks(root, buffer);
   buffer << "}";
 }//end print method
 

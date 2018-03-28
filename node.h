@@ -38,7 +38,8 @@ public:
   void deleteKeyIndex(int index);
   void setChild(Node* node, int index);
   void setParent(Node* node);
-  void insertChild(Node* node);
+  void setRoot(Node* node);
+  bool insertChild(Node* node);
   std::string print();
   unsigned int getID();
   void mark();//For BFS
@@ -70,6 +71,7 @@ struct BPlusTree
   void insertKey(unsigned int const key);
   void insert(unsigned int const key);
   void split(Node* node, unsigned int const key);
+  bool insertChild(Node* parent, Node* node);
   void del(unsigned int key);
   void outputNodes(Node* node, std::ofstream &buffer);
   void outputLinks(Node* node, std::ofstream &buffer);

@@ -1,5 +1,9 @@
 #include "node.h"
 
+//----FRIEND FUNCTION----
+
+
+//----END FRIEND FUNCTIONS----
 //----NODE----
 
 Node::Node()//Constructor
@@ -95,59 +99,6 @@ void Node::setParent(Node* node)
 {
   parent = node;
 }
-
-void Node::insertChild(Node* node)
-{
-  unsigned int last = node->getLastKey();
-  //if we're using the arrange children method the node will have 2 or 3 keys, not one
-  if(keys.size() == 2)//this node has 2 keys
-  {
-    //Node* temp;//used to swap
-    if(last <= keys[0])
-    {/*Since the last ket of node is less than or equal to the last node of the first
-      key, the first key must be the new element that was inserted into the node*/
-
-      //shift children
-      childNodes[2] = childNodes[1];
-      childNodes[1] = childNodes[0];
-      childNodes[0] = node;
-    }//end if last key of node is less thatn or equal to the first key of the node
-    else if(keys[0] < last && last <= keys[1])
-    {/*here the second key is the new key, so the last child for 2 nodes is new*/
-      childNodes[2] = childNodes[1];
-      childNodes[1] = node;
-    }//if the last key of node is greater than keys[0] but less than or equal to keys[1]
-    else
-    {
-      childNodes[2] = node;
-    }
-  }//end if
-  else if(keys.size() == 3)//numKeys == 3
-  {
-    if(last <= keys[0])
-    {
-      childNodes[3] = childNodes[2];
-      childNodes[2] = childNodes[1];
-      childNodes[1] = childNodes[0];
-      childNodes[0] = node;
-    }//end f
-    else if(keys[0] < last && last <= keys[1])
-    {
-      childNodes[3] = childNodes[2];
-      childNodes[2] = childNodes[1];
-      childNodes[1] = node;
-    }//end else if
-    else if(keys[1] < last && last <= keys[2])
-    {
-      childNodes[3] = childNodes[2];
-      childNodes[2] = node;
-    }
-    else
-    {
-      childNodes[3] = node;
-    }
-  }//end else
-}//end arrangeChildren Method
 
 unsigned int Node::getID()
 {
@@ -287,19 +238,26 @@ void BPlusTree::split(Node* node, unsigned int const key)
     newLeaf->setParent(parent);//set parent of new sibling
     node->deleteKeyIndex(LAST_KEY);//Delete the last element
     node->deleteKeyIndex(LAST_KEY-1);//Delete the last element
-    node->insertKey(copy[1]);//insert the key being split
+    node->deleteKeyIndex(LAST_KEY-2);//DELETE ALL KEYS
+    node->insertKey(copy[0]);//this should be the first key of the nodes
+    node->insertKey(copy[1]);//insert the key being split, the reduncant entry
     if(node != root)//If the parent of the node isn't full
     {
       if(!parent->isFull())//SEG FAULT - PARENT IS NULL!
       {
         parent->insertKey(copy[1]);//insert the second key of the copy vector
-        parent->insertChild(newLeaf);
+        insertChild(parent, newLeaf);
       }
       else
       {
         split(parent, copy[1]);//This will be an internal node
         parent = node->getParent();
-        parent->insertChild(newLeaf);
+        if(!insertChild(parent, newLeaf))//really hacky
+        {//We need to try anc find the actual parent!
+          Node* temp = search(root, newLeaf->getLastKey())->getParent();
+          insertChild(temp, newLeaf);
+          newLeaf->setParent(temp);
+        }
         newLeaf->setParent(parent);
       }
     }//end if
@@ -326,20 +284,27 @@ void BPlusTree::split(Node* node, unsigned int const key)
     newNode->getChild(0)->setParent(newNode);
     newNode->getChild(1)->setParent(newNode);
     node->deleteKeyIndex(LAST_KEY);//
-    node->deleteKeyIndex(LAST_KEY-1);//internel nodes don't need a redundant entry
+    node->deleteKeyIndex(LAST_KEY-1);//
+    node->deleteKeyIndex(LAST_KEY-2);//clear all keys in node
+    node->insertKey(copy[0]);
     node->setChild(nullptr, 2);//No children here any more since they moved
     node->setChild(nullptr, 3);
     if(node != root && !parent->isFull())
     {
       parent->insertKey(copy[1]);//the second key
-      parent->insertChild(newNode);
+      insertChild(parent, newNode);
     }//end if
     else if(node != root && parent->isFull())
     {
       //The parent node is full, so that also needs to be split
       split(parent, copy[1]);//This will be an internal node
       parent = node->getParent();
-      parent->insertChild(newNode);
+      if(insertChild(parent, newNode))
+      {//We need to try anc find the actual parent!
+        Node* temp = search(root, newNode->getLastKey())->getParent();
+        insertChild(temp, newNode);
+      }
+      newNode->setParent(parent);
     }//end else parent is full
     else if(node == root)
     {
@@ -354,6 +319,75 @@ void BPlusTree::split(Node* node, unsigned int const key)
   }//end else internal node
 
 }//end split method
+
+bool BPlusTree::insertChild(Node* parent, Node* node)
+{
+  unsigned int last = node->getLastKey();
+  //if we're using the arrange children method the node will have 2 or 3 keys, not one
+  //if a keys size of 1 is encounters, that node was split.
+  if(parent->getNumKeys() == 1)
+  {
+    //If this node has only 1 key, that means it was actually split. This child node may or maynot be the child
+    if(last < parent->getChild(1)->getLastKey())//if this is true, then this is a better child for the node!
+    {
+      Node* temp = parent->getChild(1);
+      parent->setChild(node, 1);
+      //Now I need to find a way to find the node this is suppose to be inserted into
+      Node* newParent = search(root, temp->getLastKey())->getParent();//find the parent of the child swapped
+      insertChild(newParent, temp);
+      return true;
+    }
+    return false;
+  }//end if key size is equal to 1
+  if(parent->getNumKeys() == 2)//this node has 2 keys
+  {
+    //Node* temp;//used to swap
+    if(last <= parent->getKey(0))
+    {/*Since the last ket of node is less than or equal to the last node of the first
+      key, the first key must be the new element that was inserted into the node*/
+
+      //shift children
+      parent->setChild(parent->getChild(1), 2);
+      parent->setChild(parent->getChild(0), 1);
+      parent->setChild(node, 0);
+    }//end if last key of node is less thatn or equal to the first key of the node
+    else if(parent->getKey(0) < last && last <= parent->getKey(1))
+    {/*here the second key is the new key, so the last child for 2 nodes is new*/
+      parent->setChild(parent->getChild(1), 2);
+      parent->setChild(node, 1);
+    }//if the last key of node is greater than keys[0] but less than or equal to keys[1]
+    else
+    {
+      parent->setChild(node, 2);
+    }
+  }//end if
+  else if(parent->getNumKeys() == 3)//numKeys == 3
+  {
+    if(last <= parent->getKey(0))
+    {
+      parent->setChild(parent->getChild(2), 3);
+      parent->setChild(parent->getChild(1), 2);
+      parent->setChild(parent->getChild(0), 1);
+      parent->setChild(node, 0);
+    }//end f
+    else if(parent->getKey(0) < last && last <= parent->getKey(1))
+    {
+      parent->setChild(parent->getChild(2), 3);
+      parent->setChild(parent->getChild(1), 2);
+      parent->setChild(node, 1);
+    }//end else if
+    else if(parent->getKey(1) < last && last <= parent->getKey(2))
+    {
+      parent->setChild(parent->getChild(2), 3);
+      parent->setChild(node, 2);
+    }
+    else
+    {
+      parent->setChild(node, 3);
+    }
+  }//end else
+  return true;
+}//end function
 
 void BPlusTree::insert(unsigned int const key)
 {

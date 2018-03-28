@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdio.h>
 #include "node.h"
 
 using namespace std;
@@ -6,21 +7,38 @@ using namespace std;
 int main()
 {
   BPlusTree tree;
+  string option;
+  bool running = true;
+  /*while(running)
+  {
+    cin >> option;
+    if(option == ".")
+      running = false;
+    else
+    {
+      tree.insert(stoi(option));
+      tree.print();
+      system("dot output.gv -Tpng -o image.png");
+    }//end else
+  }//end while*/
+
+
+  tree.insert(50);
+  tree.insert(45);
+  tree.insert(30);
   tree.insert(10);
   tree.insert(3);
-  tree.insert(6);
-  tree.insert(4);
-  tree.insert(11);
-  tree.insert(12);
-  tree.insert(2);
-  tree.insert(7);
-  tree.insert(8);
-  tree.insert(13);
-  tree.insert(16);
-  tree.insert(5);
+  tree.insert(90);
+  tree.insert(100);
+  tree.insert(200);
+  tree.insert(250);
+  tree.insert(190);
+  tree.insert(300);
   tree.insert(14);
-  tree.insert(18);
-  tree.insert(20);
-  tree.insert(25);
+  tree.insert(13);
+  tree.insert(12);
+  tree.insert(8);
+  tree.insert(5);
   tree.print();
+  system("dot output.gv -Tpng -o image.png");
 }//end main

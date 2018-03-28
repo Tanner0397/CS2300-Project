@@ -69,7 +69,7 @@ struct BPlusTree
   Node* searchKey(unsigned int const key);
   Node* search(Node* node ,unsigned int const key);
   void insertKey(unsigned int const key);
-  void insert(Node* node, unsigned int const key);
+  void insert(unsigned int const key);
   void split(Node* node, unsigned int const key);
   void del(unsigned int key);
   void outputNodes(Node* node, std::ofstream &buffer);

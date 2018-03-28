@@ -7,7 +7,6 @@ Node::Node()//Constructor
   static unsigned int m_id = 0;//Used for auto incrementing id
   id = m_id++;
   marked = false;
-  numKeys = 0;//First its empty
   for(unsigned int i = 0; i < TREE_ORDER; i++)
   {
     childNodes[i] = nullptr;
@@ -80,9 +79,8 @@ std::vector<unsigned int> Node::getKeys()
 
 void Node::deleteKeyIndex(int index)
 {
-  if(/*index < keys.size()*/true)
+  if(index < keys.size())
   {
-    numKeys--;
     keys.erase(keys.begin()+index);
   }//end if
 
@@ -357,7 +355,7 @@ void BPlusTree::split(Node* node, unsigned int const key)
 
 }//end split method
 
-void BPlusTree::insert(Node* node, unsigned int const key)
+void BPlusTree::insert(unsigned int const key)
 {
   Node* result = BPlusTree::searchKey(key);
   if(!result->isFull())
@@ -369,11 +367,6 @@ void BPlusTree::insert(Node* node, unsigned int const key)
     BPlusTree::split(result, key);
   }//end else
 }//end insert method
-
-void BPlusTree::insertKey(unsigned int const key)
-{
-  BPlusTree::insert(root, key);
-}//end insert key method
 
 void BPlusTree::outputNodes(Node* node, std::ofstream &buffer)
 {

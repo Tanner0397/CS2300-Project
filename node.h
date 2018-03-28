@@ -20,7 +20,6 @@ protected:
 private:
   unsigned int id;//unique Id used for printing.
   bool marked;//Mark all the
-  unsigned int numKeys;
   Node* childNodes[TREE_ORDER];//Array of pointers to children
   Node* parent;
 public:

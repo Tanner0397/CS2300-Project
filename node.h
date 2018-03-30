@@ -67,11 +67,14 @@ struct BPlusTree
   Node* root;//Root of the tree
   BPlusTree();
   Node* searchKey(unsigned int const key);
-  Node* search(Node* node ,unsigned int const key);
+  Node* searchLeaf(Node* node ,unsigned int const key);
+  Node* searchInternal(unsigned int key);
+  Node* findNode(Node* node, unsigned int key, unsigned int childLevel);
   void insertKey(unsigned int const key);
   void insert(unsigned int const key);
-  void split(Node* node, unsigned int const key);
+  Node* split(Node* node, unsigned int const key);
   bool insertChild(Node* parent, Node* node);
+  unsigned int level(Node* node);
   void del(unsigned int key);
   void outputNodes(Node* node, std::ofstream &buffer);
   void outputLinks(Node* node, std::ofstream &buffer);

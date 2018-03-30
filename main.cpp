@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdio.h>
+#include <fstream>
 #include "node.h"
 
 using namespace std;
@@ -9,21 +10,37 @@ int main()
   BPlusTree tree;
   string option;
   bool running = true;
+  unsigned int counter = 0;
   /*while(running)
   {
+    counter++;
     cin >> option;
     if(option == ".")
       running = false;
     else
     {
       tree.insert(stoi(option));
+      cout << "Current Number of Nodes: " << counter << endl;
       tree.print();
       system("dot output.gv -Tpng -o image.png");
     }//end else
   }//end while*/
 
+  ifstream buffer;
+  int input;
+  buffer.open("testInput");
+  while(buffer >> input)
+  {
+    tree.insert(input);
+    tree.print();
+    system("dot output.gv -Tpng -o image.png");
+  }
 
-  tree.insert(50);
+  tree.print();
+  system("dot output.gv -Tpng -o image.png");
+
+
+  /*tree.insert(50);
   tree.insert(45);
   tree.insert(30);
   tree.insert(10);
@@ -40,5 +57,5 @@ int main()
   tree.insert(8);
   tree.insert(5);
   tree.print();
-  system("dot output.gv -Tpng -o image.png");
-}//end main
+  system("dot output.gv -Tpng -o image.png");*/
+}

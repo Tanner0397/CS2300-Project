@@ -36,6 +36,7 @@ public:
   bool isFull();//
   void insertKey(unsigned int const key);
   void deleteKeyIndex(int index);
+  void clearAllKeys();
   void setChild(Node* node, int index);
   void setParent(Node* node);
   void setRoot(Node* node);
@@ -68,13 +69,11 @@ struct BPlusTree
   BPlusTree();
   Node* searchKey(unsigned int const key);
   Node* searchLeaf(Node* node ,unsigned int const key);
-  Node* searchInternal(unsigned int key);
-  Node* findNode(Node* node, unsigned int key, unsigned int childLevel);
   void insertKey(unsigned int const key);
   void insert(unsigned int const key);
   Node* split(Node* node, unsigned int const key);
   bool insertChild(Node* parent, Node* node);
-  unsigned int level(Node* node);
+  unsigned int countKeys(Node* node);//counts the keys, testing use only
   void del(unsigned int key);
   void outputNodes(Node* node, std::ofstream &buffer);
   void outputLinks(Node* node, std::ofstream &buffer);

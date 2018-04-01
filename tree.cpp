@@ -65,7 +65,7 @@ Node* Node::getParent()
 
 bool Node::isFull()
 {
-  if(keys.size() == TREE_ORDER-1)
+  if(keys.size() == TREE_ORDER-1)//Shoud be three
     return true;
   return false;
 }//end isFull method
@@ -89,6 +89,11 @@ void Node::deleteKeyIndex(int index)
   }//end if
 
 }//end deleteKey method
+
+void Node::clearAllKeys()
+{
+  keys.clear();
+}
 
 void Node::setChild(Node* node, int index)
 {
@@ -222,29 +227,6 @@ Node* BPlusTree::searchLeaf(Node* node ,unsigned int const key)
   }//end else
 }//end search method
 
-Node* BPlusTree::searchInternal(unsigned int key)
-{
-  //Get the leaf node of where this is closest to the node
-  Node* result = searchLeaf(root, key);//key is the last key in the node
-  unsigned int nodeLevel = level(result);
-  findNode(result, key, nodeLevel);
-}//end function searchInternal
-
-Node* BPlusTree::findNode(Node* node, unsigned int key, unsigned int childLevel)//resursive function to find the parent.
-{
-  unsigned int nodeLevel = level(node);
-  if(nodeLevel == childLevel-1)//This node is one level above where the child should be , this this has to be the parent
-  {
-    return node;
-  }//end if
-  else//this cannot be ther parent so we must go up!
-  {
-    Node* parent = node->getParent();
-    return findNode(parent, key, childLevel);
-  }
-}//end findNode member function
-
-
 Node* BPlusTree::split(Node* node, unsigned int const key)
 {
   std::vector<unsigned int> copy = node->getKeys();//get copy of keys
@@ -267,9 +249,7 @@ Node* BPlusTree::split(Node* node, unsigned int const key)
     newLeaf->insertKey(copy[2]);
     newLeaf->insertKey(copy[3]);//Insert the last two elements of the keys
     newLeaf->setParent(parent);//set parent of new sibling
-    node->deleteKeyIndex(LAST_KEY);//Delete the last element
-    node->deleteKeyIndex(LAST_KEY-1);//Delete the last element
-    node->deleteKeyIndex(LAST_KEY-2);//DELETE ALL KEYS
+    node->clearAllKeys();
     node->insertKey(copy[0]);//this should be the first key of the nodes
     node->insertKey(copy[1]);//insert the key being split, the reduncant entry
     if(node != root)//If the parent of the node isn't full
@@ -282,14 +262,8 @@ Node* BPlusTree::split(Node* node, unsigned int const key)
       else
       {
         Node* result = split(parent, copy[1]);//This will be an internal node
-        parent = node->getParent();
-        newLeaf->setParent(parent);
-        if(!insertChild(parent, newLeaf))//really hacky
-        {//We need to try anc find the actual parent!
-          //Node* temp = searchLeaf(root, copy[3])->getParent();//seg fault here!
-          insertChild(result, newLeaf);
-          newLeaf->setParent(result);
-        }
+        newLeaf->setParent(result);
+        insertChild(result, newLeaf);
       }
     }//end if
     else if(node == root)
@@ -311,15 +285,16 @@ Node* BPlusTree::split(Node* node, unsigned int const key)
     newNode->insertKey(copy[2]);
     newNode->insertKey(copy[3]);//Give newNode the keys it needs
     newNode->setParent(parent);
-    node->deleteKeyIndex(LAST_KEY);
-    node->deleteKeyIndex(LAST_KEY-1);
-    node->deleteKeyIndex(LAST_KEY-2);//Delete all the keys
+    node->clearAllKeys();
     node->insertKey(copy[0]);
-    if(index <= 1)
+    if(index < 1)
     {
       newNode->setChild(node->getChild(1), 0);
       newNode->setChild(node->getChild(2), 1);
       newNode->setChild(node->getChild(3), 2);
+      newNode->getChild(0)->setParent(newNode);
+      newNode->getChild(1)->setParent(newNode);
+      newNode->getChild(2)->setParent(newNode);//set children parent nodes
       node->setChild(nullptr, 1);
       node->setChild(nullptr, 2);
       node->setChild(nullptr, 3);//clear children that moved
@@ -328,6 +303,8 @@ Node* BPlusTree::split(Node* node, unsigned int const key)
     {
       newNode->setChild(node->getChild(2), 0);
       newNode->setChild(node->getChild(3), 1);
+      newNode->getChild(0)->setParent(newNode);
+      newNode->getChild(1)->setParent(newNode);
       node->setChild(nullptr, 2);
       node->setChild(nullptr, 3);//clear children that moved
     }//end child setting
@@ -337,7 +314,7 @@ Node* BPlusTree::split(Node* node, unsigned int const key)
       {
         parent->insertKey(copy[1]);//insert the second key into the parent now
         insertChild(parent, newNode);
-        if(index <= 1)
+        if(index < 1)
           return node;
         return newNode;
       }//end if the parent is not full
@@ -347,7 +324,7 @@ Node* BPlusTree::split(Node* node, unsigned int const key)
         Node* result = split(parent, copy[1]);
         insertChild(result, newNode);
         newNode->setParent(result);
-        if(index <= 1)
+        if(index < 1)
           return node;
         return newNode;
       }//end if the parent is full
@@ -361,7 +338,7 @@ Node* BPlusTree::split(Node* node, unsigned int const key)
       node->setParent(newRoot);
       newNode->setParent(newRoot);
       root = newRoot;
-      if(index <= 1)
+      if(index < 1)
         return node;
       return newNode;
     }
@@ -453,7 +430,7 @@ void BPlusTree::insert(unsigned int const key)
   }//end if node is full
   else//the node is full
   {
-    BPlusTree::split(result, key);
+    BPlusTree::split(result, key);//This also inserts the key, but with the split.
   }//end else
 }//end insert method
 
@@ -491,13 +468,6 @@ void BPlusTree::outputLinks(Node* node, std::ofstream &buffer)
   outputLinks(node->getChild(3),buffer);
 }
 
-unsigned int BPlusTree::level(Node* node)
-{
-  if(node == root)
-    return 0;
-  return level(node->getParent())+1;
-}//end level member function
-
 void BPlusTree::print()
 {
   int index = 0;
@@ -509,5 +479,19 @@ void BPlusTree::print()
   outputLinks(root, buffer);
   buffer << "}";
 }//end print method
+
+unsigned int BPlusTree::countKeys(Node* node)//For testing
+{
+  if(!node->isLeafNode())
+    return countKeys(node->getChild(0));
+  else
+  {
+    leafNode* leaf = dynamic_cast<leafNode*>(node);
+    if(leaf->getRightSibling() != nullptr)
+      return countKeys(leaf->getRightSibling())+leaf->getNumKeys();
+    else
+      return leaf->getNumKeys();
+  }//end else
+}
 
 //----END B PLUS TREE----

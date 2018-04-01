@@ -32,9 +32,11 @@ int main()
   while(buffer >> input)
   {
     tree.insert(input);
-    tree.print();
-    system("dot output.gv -Tpng -o image.png");
+    //tree.print();
+    //system("dot output.gv -Tpng -o image.png");
   }
+
+  cout << "Numer of keys found: " << tree.countKeys(tree.root) << endl;
 
   tree.print();
   system("dot output.gv -Tpng -o image.png");

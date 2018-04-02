@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+# static files
+*.png
+*.bmp
+*.gv
+*.dot
+
+# Error files
+*.stackdump

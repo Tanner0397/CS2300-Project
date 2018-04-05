@@ -36,6 +36,12 @@ int main()
     //system("dot output.gv -Tpng -o image.png");
   }
 
+  tree.del(793);
+  tree.del(788);
+  tree.del(804);
+  tree.del(438);
+  tree.del(223);
+
   cout << "Numer of keys found: " << tree.countKeys(tree.root) << endl;
 
   tree.print();

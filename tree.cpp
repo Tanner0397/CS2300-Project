@@ -70,6 +70,14 @@ bool Node::isFull()
   return false;
 }//end isFull method
 
+bool Node::isMemberOf(unsigned int key)
+{
+  for(unsigned int i = 0; i < keys.size(); i++)
+    if(key == keys[i])
+      return true;
+  return false;
+}//end isMemberof function
+
 void Node::insertKey(unsigned int key)
 {
   keys.push_back(key);
@@ -89,6 +97,15 @@ void Node::deleteKeyIndex(int index)
   }//end if
 
 }//end deleteKey method
+
+void Node::deleteKey(unsigned int const key)
+{
+  for(unsigned int i = 0; i < keys.size(); i++)
+  {
+    if(key == keys[i])
+      deleteKeyIndex(i);
+  }//end for
+}//end end delete Key
 
 void Node::clearAllKeys()
 {
@@ -226,6 +243,45 @@ Node* BPlusTree::searchLeaf(Node* node ,unsigned int const key)
     }//end else numKeys == 3
   }//end else
 }//end search method
+
+Node* BPlusTree::firstInstance(Node* node, unsigned int key)
+{
+  if(node->isMemberOf(key))
+    return node;
+  std::cout << node->print() << std::endl;
+
+  if(node->getNumKeys() == 1)//There is only 1 key in this node
+  {
+      //std::cout << "TEST 5" << std::endl;
+    if(key <= node->getKey(0))
+      return firstInstance(node->getChild(0), key);//The left most child Node
+    else
+      return firstInstance(node->getChild(1), key);
+  }//end if numKeys == 1
+  else if(node->getNumKeys() == 2)//There are 2 keys in the node
+  {
+    //std::cout << "TEST 6" << std::endl;
+    if(key <= node->getKey(0))
+      return firstInstance(node->getChild(0), key);//goto left most child
+    else if(key > node->getKey(0) && key <= node->getKey(1))//keys[0] < key <= keys[1]
+        return firstInstance(node->getChild(1), key);//goto middle child
+    else//The key is greater than all the keys in the node
+      return firstInstance(node->getChild(2), key);//goto right most child
+  }//end if numKeys == 2
+  else if(node->getNumKeys() == 3)
+  {
+    //std::cout << "TEST 7" << std::endl;
+    if(key <= node->getKey(0))
+      return firstInstance(node->getChild(0), key);//goto left most child
+    else if(key > node->getKey(0) && key <= node->getKey(1))//keys[0] < key <= keys[1]
+      return firstInstance(node->getChild(1), key);//goto second child
+    else if(key > node->getKey(1) && key <= node->getKey(2))//keys[1] < key <= keys[2]
+      return firstInstance(node->getChild(2), key);//goto third child
+    else//The key is greater than all the keys in the node
+      return firstInstance(node->getChild(3), key);//goto right most child
+  }//end else numKeys == 3
+
+}//end firstSintance method
 
 Node* BPlusTree::split(Node* node, unsigned int const key)
 {
@@ -493,5 +549,41 @@ unsigned int BPlusTree::countKeys(Node* node)//For testing
       return leaf->getNumKeys();
   }//end else
 }
+//works for now, if internal nodes will have multiple instances of keys this is not good enough. 
+void BPlusTree::moveKey(Node* node, unsigned int const key)
+{
+  Node* container = node->getParent();
+  //if this node is the last child, it actually isnt in the parent. of that node
+  if((container->getNumKeys() == 2 && container->getChild(2) == node) || (container->getNumKeys() == 3 && container->getChild(3) == node))
+  {
+    container = firstInstance(root, key);
+    std::cout << "Finished " << container->print() << std::endl;
+  }//end
+  node->deleteKey(key);
+  container->deleteKey(key);//remove that old key
+  unsigned int newKey = node->getLastKey();//the new key
+  container->insertKey(newKey);
+  return;
+}//end moveKey method
+
+void BPlusTree::del(unsigned int const key)
+{
+  Node* result = searchKey(key);
+  if(result->getNumKeys() >= 2)
+  {
+    if(key == result->getLastKey())
+    {
+      moveKey(result, key);//this will deal with the deletion of the key in this node
+    }//this is the last key of the node, so it has an entry in an internal node
+    else//not the last key so this isn't really a problem
+    {
+      result->deleteKey(key);//delete that key
+    }//end else
+  }//end if node is at least half full
+  else//node has only one key
+  {
+
+  }
+}//end delete method
 
 //----END B PLUS TREE----

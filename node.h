@@ -37,7 +37,7 @@ public:
   bool isMemberOf(unsigned int key);//if this key is a member of the node
   void insertKey(unsigned int const key);
   void deleteKeyIndex(int index);
-  void deleteKey(unsigned int const key);
+  bool deleteKey(unsigned int const key);
   void clearAllKeys();
   void setChild(Node* node, int index);
   void setParent(Node* node);
@@ -78,9 +78,12 @@ struct BPlusTree
   bool insertChild(Node* parent, Node* node);
   unsigned int countKeys(Node* node);//counts the keys, testing use only
   void del(unsigned int const key);
+  void redistrubute(Node* node, Node* sibling, unsigned int const key);
+  void merge(Node* node, Node* sibling, unsigned int const key);
   void moveKey(Node* node, unsigned int const key);
   void outputNodes(Node* node, std::ofstream &buffer);
   void outputLinks(Node* node, std::ofstream &buffer);
+  void outputSiblings(Node* node, std::ofstream &buffer);
   void print();
 
 };//end of BPlusTree struct

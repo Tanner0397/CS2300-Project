@@ -36,11 +36,22 @@ int main()
     //system("dot output.gv -Tpng -o image.png");
   }
 
-  tree.del(793);
-  tree.del(788);
-  tree.del(804);
-  tree.del(438);
-  tree.del(223);
+  tree.print();
+  system("dot output.gv -Tpng -o image.png");
+
+  while(running)
+  {
+    counter++;
+    cin >> option;
+    if(option == ".")
+      running = false;
+    else
+    {
+      tree.del(stoi(option));
+      tree.print();
+      system("dot output.gv -Tpng -o image.png");
+    }//end else
+  }//end while
 
   cout << "Numer of keys found: " << tree.countKeys(tree.root) << endl;
 

@@ -42,7 +42,6 @@ public:
   void setChild(Node* node, int index);
   void setParent(Node* node);
   void setRoot(Node* node);
-  bool insertChild(Node* node);
   std::string print();
   unsigned int getID();
   void mark();//For BFS
@@ -76,6 +75,7 @@ struct BPlusTree
   void insert(unsigned int const key);
   Node* split(Node* node, unsigned int const key);
   bool insertChild(Node* parent, Node* node);
+  void removeChild(Node* parent, Node* node);
   unsigned int countKeys(Node* node);//counts the keys, testing use only
   void del(unsigned int const key);
   void redistrubute(Node* node, Node* sibling, unsigned int const key);

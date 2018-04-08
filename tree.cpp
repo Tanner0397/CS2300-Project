@@ -483,6 +483,71 @@ bool BPlusTree::insertChild(Node* parent, Node* node)
   return true;
 }//end function
 
+void BPlusTree::removeChild(Node* parent, Node* node)
+{
+
+  if(parent->getNumKeys() == 2)
+  {
+    if(node == parent->getChild(0))//node is the first
+    {
+      parent->deleteKeyIndex(0);//remove the first key in the parent
+      parent->setChild(parent->getChild(1), 0);//shift all 2 remaining children
+      parent->setChild(parent->getChild(2), 1);
+      parent->setChild(nullptr, 2);//pointer has moved, delete old one
+    }
+    else if(node == parent->getChild(1))//second
+    {
+      parent->deleteKeyIndex(1);//remove the second key
+      parent->setChild(parent->getChild(2), 1);//shirt only 1
+      parent->setChild(nullptr, 2);
+    }
+    else if(node == parent->getChild(1))//second again
+    {
+      parent->deleteKeyIndex(LAST_KEY-1);//third, but it's the last as well
+      parent->setChild(nullptr, 2);
+    }
+    else//We have an error here, node isn't the child of parent at all!
+    {
+      throw "Oops";
+    }//end else
+  }//end if the parent has 3 children
+  else if(parent->getNumKeys() == 3)
+  {
+    if(node == parent->getChild(0))
+    {
+      parent->deleteKeyIndex(0);//remove first key
+      parent->setChild(parent->getChild(1), 0);//shift all 2 remaining children
+      parent->setChild(parent->getChild(2), 1);
+      parent->setChild(parent->getChild(3), 2);
+      parent->setChild(nullptr, 3);
+    }//end if
+    else if(node == parent->getChild(1))
+    {
+      parent->deleteKeyIndex(1);//second
+      parent->setChild(parent->getChild(2), 1);
+      parent->setChild(parent->getChild(3), 2);
+      parent->setChild(nullptr, 3);
+    }//end else if
+    else if(node == parent->getChild(2))
+    {
+      std::cout << "HEY "<< parent->getKey(2) << std::endl;
+      parent->deleteKeyIndex(LAST_KEY);//remove last key
+      parent->setChild(parent->getChild(3), 2);
+      parent->setChild(nullptr, 3);
+    }
+    else if(node == parent->getChild(3))
+    {
+      std::cout << "HEYYOO "<< parent->getKey(2) << std::endl;
+      parent->deleteKeyIndex(LAST_KEY);//remove the last key!
+      parent->setChild(nullptr, 3);
+    }
+    else//We have an error here, node isn't the child of parent at all!
+    {
+      throw "Oops";
+    }//end else
+  }//end if this node has all four children
+}//end function removeChild
+
 void BPlusTree::insert(unsigned int const key)
 {
   Node* result = BPlusTree::searchKey(key);
@@ -596,6 +661,7 @@ void BPlusTree::redistrubute(Node* node, Node* sibling, unsigned int const key)
   if(node->isLeafNode())//this is a leaf node, so sibling is also a leaf node
   {
     bool result = false;
+    unsigned int oldLastKey = node->getLastKey();
     leafNode* leaf = dynamic_cast<leafNode*>(node);
     leafNode* leafSibling = dynamic_cast<leafNode*>(sibling);
     unsigned int newKey = leafSibling->getKey(0);//get the first key, implying this is a right sibling
@@ -608,6 +674,15 @@ void BPlusTree::redistrubute(Node* node, Node* sibling, unsigned int const key)
     node->insertKey(newKey);
     if(result)//if the key was in an internal node
       container->insertKey(node->getLastKey());//insert the last key of the node
+    else//this wasn't in in internal node, however an internal node could change!
+    {//here container == node, since it wasn't in an internal node so the first instance is the leaf!
+      unsigned int newLastKey = node->getLastKey();//new last key in node, since it chould change
+      if(oldLastKey != newLastKey)
+      {
+        node->getParent()->deleteKey(oldLastKey);//remove the old last ky from the parent
+        node->getParent()->insertKey(newLastKey);//add the new last key to the parent!
+      }//edn keys no longer match
+    }
     if(leafSibling == leaf->getLeftSibling())//we tood the last key, so we need to remove it from an internal node
     {
       moveKey(leafSibling, newKey);//this should remove the key from the sibling and and whatever internal node it was in
@@ -628,9 +703,59 @@ void BPlusTree::merge(Node* node, Node* sibling, unsigned int const key)
     leafNode* leaf = dynamic_cast<leafNode*>(node);
     leafNode* leafSibling = dynamic_cast<leafNode*>(sibling);
     Node* parent = leaf->getParent();
+    unsigned int oldLastKey = node->getLastKey();
+    bool result = false;
     if(parent->getNumKeys() >= 2)//if the parent of this node had more than 2 children, we have no problem
     {
+      Node* container = firstInstance(root, key);//gets the first instance
+      node->deleteKey(key);//delete the key
+      result = container->deleteKey(key);
+      //vectors
+      std::cout << "YOO" << std::endl;
+      std::vector<unsigned int> newKeys = sibling->getKeys();
+      std::cout << "YOO" << std::endl;
 
+      //node->clearAllKeys();//clear all the keys for node
+      for(unsigned int i = 0; i < newKeys.size(); i++)
+      {
+       node->insertKey(newKeys[i]);//insert all the newKeys into the recently emptied node
+      }//end for loop
+      unsigned int newKey = node->getLastKey();//This is the new key that is refrenced
+      if(result)//if the node deleted was in an internal node
+        container->insertKey(newKey);//insert the new key into the node that lost it's record
+      else
+      {
+        unsigned int newLastKey = node->getLastKey();//new last key in node, since it chould change
+        if(oldLastKey != newLastKey)
+        {
+          node->getParent()->deleteKey(oldLastKey);//remove the old last ky from the parent
+          node->getParent()->insertKey(newLastKey);//add the new last key to the parent!
+        }//edn keys no longer match
+      }
+
+      //rearrange the siblings
+      if(leafSibling == leaf->getLeftSibling())
+      {
+        leaf->setLeftSibling(leafSibling->getLeftSibling());
+        if(leaf->getLeftSibling() != nullptr)
+          leaf->getLeftSibling()->setRightSibling(leaf);
+      }//end this is right siblings
+      else if(leafSibling == leaf->getRightSibling())
+      {
+        leaf->setRightSibling(leafSibling->getRightSibling());
+        if(leaf->getRightSibling() != nullptr)
+          leaf->getRightSibling()->setLeftSibling(leaf);
+      }//end this is left siblings
+
+      //New we msut rearrange the children of the parent.
+      if(parent == sibling->getParent())
+      {
+        removeChild(parent, sibling);
+      }//end if parents are the same
+      else//the two nodes don't have the same parent, so they hopped boundries
+      {
+
+      }
     }//end if
   }//end is leaf
   else//this is an internal node

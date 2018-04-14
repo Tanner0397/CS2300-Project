@@ -32,6 +32,7 @@ public:
   unsigned int getLastKey();
   Node* getParent();
   Node* getChild(int index);//0 is left most and 3 is right most
+  Node* getLastChild();
   bool isLeafNode();//retursn true if this is a leaf node
   bool isFull();//
   bool isMemberOf(unsigned int key);//if this key is a member of the node
@@ -71,6 +72,10 @@ struct BPlusTree
   Node* searchKey(unsigned int const key);
   Node* searchLeaf(Node* node ,unsigned int const key);
   Node* firstInstance(Node* node, unsigned int const);//this retuns the first node it finds with this key in it
+  Node* findRightSibling(Node* node);
+  Node* findLeftSibling(Node* node);
+  Node* getLastNode(Node* node);
+  Node* getFirstNode(Node* node);
   void insertKey(unsigned int const key);
   void insert(unsigned int const key);
   Node* split(Node* node, unsigned int const key);
@@ -79,7 +84,7 @@ struct BPlusTree
   unsigned int countKeys(Node* node);//counts the keys, testing use only
   void del(unsigned int const key);
   void redistrubute(Node* node, Node* sibling, unsigned int const key);
-  void merge(Node* node, Node* sibling, unsigned int const key);
+  void merge(Node* node, Node* sibling, unsigned int const key, bool leftMerge);
   void moveKey(Node* node, unsigned int const key);
   void outputNodes(Node* node, std::ofstream &buffer);
   void outputLinks(Node* node, std::ofstream &buffer);

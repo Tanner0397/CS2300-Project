@@ -36,6 +36,19 @@ int main()
     //system("dot output.gv -Tpng -o image.png");
   }
 
+  //manual
+  //tree.del(36);
+  //tree.del(38);
+  //tree.del(42);
+  //tree.del(91);
+  //tree.del(70);
+  //tree.del(80);
+  //tree.del(82);
+  //tree.del(79);
+  //tree.del(65);
+  //tree.del(76);
+  //tree.del(75);
+
   tree.print();
   system("dot output.gv -Tpng -o image.png");
 

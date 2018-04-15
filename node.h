@@ -1,5 +1,5 @@
-#ifndef BPLUSTREE_H
-#define BPLUSTREE_H
+#ifndef NODE_H
+#define NODE_H
 #include <vector>
 #include <algorithm>
 #include <iostream>
@@ -30,22 +30,27 @@ public:
   std::vector<unsigned int> getKeys();//returns vector of keys
   unsigned int getKey(int index);//Returns the key value af the given index
   unsigned int getLastKey();
-  Node* getParent();
-  Node* getChild(int index);//0 is left most and 3 is right most
+  Node* getParent();//get the parent of the node
+  /*Obtain the child at the specified index. 0: leftmost and 3: rightMost*/
+  Node* getChild(int index);
+  //Obtain a pointer to the last child of the node. Mostly used to find the last node of a tree/subtree
   Node* getLastChild();
-  bool isLeafNode();//retursn true if this is a leaf node
-  bool isFull();//
-  bool isMemberOf(unsigned int key);//if this key is a member of the node
-  void insertKey(unsigned int const key);
-  void deleteKeyIndex(int index);
+  bool isLeafNode();//retursn true of this is a leaf node
+  bool isFull();//returns tree if we are full on keys in a node
+  bool isMemberOf(unsigned int key);//true if this key is a member of this node
+  void insertKey(unsigned int const key);//insert a key into a node
+  void deleteKeyIndex(int index);//Delete a key in the node at the index
+  //Attempt to delete the exact key from node. Retursn true of successful, othersize it is false
   bool deleteKey(unsigned int const key);
-  void clearAllKeys();
+  void clearAllKeys();//clears all the keys in this node
+  //set node as this nodes child for index
   void setChild(Node* node, int index);
+  //set the parent of this node to be node
   void setParent(Node* node);
-  void setRoot(Node* node);
+  //prints out the current node with it's id. Formatted for graphviz
   std::string print();
-  unsigned int getID();
-  void mark();//For BFS
+  unsigned int getID();//get this nodes unique id
+  void mark();//For In otder tree traversal
   void unmark();
   bool isMarked();
 };//End of class Node
@@ -63,35 +68,5 @@ public:
   void setRightSibling(leafNode* node);
 
 };//End of Class Leaf Node
-
-struct BPlusTree
-{
-
-  Node* root;//Root of the tree
-  BPlusTree();
-  Node* searchKey(unsigned int const key);
-  Node* searchLeaf(Node* node ,unsigned int const key);
-  Node* firstInstance(Node* node, unsigned int const);//this retuns the first node it finds with this key in it
-  Node* findRightSibling(Node* node);
-  Node* findLeftSibling(Node* node);
-  Node* getLastNode(Node* node);
-  Node* getFirstNode(Node* node);
-  void insertKey(unsigned int const key);
-  void insert(unsigned int const key);
-  Node* split(Node* node, unsigned int const key);
-  bool insertChild(Node* parent, Node* node);
-  void removeChild(Node* parent, Node* node);
-  unsigned int countKeys(Node* node);//counts the keys, testing use only
-  void del(unsigned int const key);
-  void redistrubute(Node* node, Node* sibling, unsigned int const key);
-  void merge(Node* node, Node* sibling, unsigned int const key, bool leftMerge);
-  void moveKey(Node* node, unsigned int const key);
-  void outputNodes(Node* node, std::ofstream &buffer);
-  void outputLinks(Node* node, std::ofstream &buffer);
-  void outputSiblings(Node* node, std::ofstream &buffer);
-  void print();
-
-};//end of BPlusTree struct
-
 
 #endif //End of preprocessor directive

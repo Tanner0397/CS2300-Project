@@ -545,7 +545,6 @@ void BPlusTree::redistribute(Node* node, Node* sibling, unsigned int const key)
 void BPlusTree::merge(Node* node, Node* sibling, unsigned int const key, bool leftMerge)
 {
   bool mergeRoot = false;
-  std::vector<unsigned int> copy = sibling->getKeys();
   Node* container = firstInstance(root, node->getLastKey());
   Node* parent = node->getParent();
   if(parent->getNumKeys() < 2)
@@ -565,8 +564,6 @@ void BPlusTree::merge(Node* node, Node* sibling, unsigned int const key, bool le
       else
         mergeRoot = true;//Node is going to be the new root when done merging
     }
-    print();
-    system("dot output.gv -Tpng -o image3.png");
   }
   //We have now merged all the nodes that need to be merged. So we can delete a node.
   if(node->isLeafNode())//We are merging two leaf nodes togehter

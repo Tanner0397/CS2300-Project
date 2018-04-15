@@ -9,8 +9,8 @@ Node::Node()//Constructor
   {
     childNodes[i] = nullptr;
     parent = nullptr;
-  }//end for loop
-}//end node constructor
+  }
+}
 
 Node::Node(const Node &node)
 {
@@ -18,25 +18,25 @@ Node::Node(const Node &node)
   for(unsigned int i = 0; i < TREE_ORDER; i++)
   {
     childNodes[i] = node.childNodes[i];
-  }//end for
+  }
   parent = node.parent;
-}//end copy constructor
+}
 
 unsigned int Node::getNumKeys()
 {
   return keys.size();
-}//end getNumKeys method
+}
 
 unsigned int Node::getKey(int index)
 {
   return keys[index];
-}//end getKeys
+}
 
 unsigned int Node::getLastKey()
 {
   if(!keys.empty())
     return keys.back();
-}//end get last key meothod
+}
 
 bool Node::isLeafNode()
 {
@@ -45,12 +45,12 @@ bool Node::isLeafNode()
     return true;
   }
   return false;
-}//end isLeafNode
+}
 
 Node* Node::getChild(int index)
 {
   return childNodes[index];
-}//end getChild
+}
 
 Node* Node::getParent()
 {
@@ -73,7 +73,7 @@ bool Node::isFull()
   if(keys.size() == TREE_ORDER-1)//Shoud be three
     return true;
   return false;
-}//end isFull method
+}
 
 bool Node::isMemberOf(unsigned int key)
 {
@@ -81,27 +81,27 @@ bool Node::isMemberOf(unsigned int key)
     if(key == keys[i])
       return true;
   return false;
-}//end isMemberof function
+}
 
 void Node::insertKey(unsigned int key)
 {
   keys.push_back(key);
   std::sort(keys.begin(), keys.end());
-}//end insertionKey
+}
 
 std::vector<unsigned int> Node::getKeys()
 {
   return keys;
-}//end getKeys method
+}
 
 void Node::deleteKeyIndex(int index)
 {
   if(index < keys.size())
   {
     keys.erase(keys.begin()+index);
-  }//end if
+  }
 
-}//end deleteKey method
+}
 
 bool Node::deleteKey(unsigned int const key)
 {
@@ -112,9 +112,9 @@ bool Node::deleteKey(unsigned int const key)
       deleteKeyIndex(i);
       return true;
     }
-  }//end for
+  }
   return false;
-}//end end delete Key
+}
 
 void Node::clearAllKeys()
 {
@@ -124,7 +124,7 @@ void Node::clearAllKeys()
 void Node::setChild(Node* node, int index)
 {
   childNodes[index] = node;
-}//end setChild moethod
+}
 
 void Node::setParent(Node* node)
 {
@@ -161,10 +161,10 @@ std::string Node::print()
       buffer += "<f" + std::to_string(i) + "> |" + std::to_string(keys[i]) + "|";
     else
       buffer += "<f" + std::to_string(i) + "> | |";
-  }//end for
+  }
   buffer += "<f3> \"]\n";
   return buffer;
-}//end print method
+}
 
 //----END NODE----
 //----LEAF NODE----
@@ -174,26 +174,26 @@ leafNode::leafNode()
   Node();
   siblings[0] = nullptr;
   siblings[1] = nullptr;
-}//end leafNode constructor
+}
 
 leafNode* leafNode::getLeftSibling()
 {
   return siblings[0];
-}//end left get
+}
 
 leafNode* leafNode::getRightSibling()
 {
   return siblings[1];
-}//end Right get
+}
 
 void leafNode::setLeftSibling(leafNode* node)
 {
   siblings[0] = node;
-}//end left get
+}
 
 void leafNode::setRightSibling(leafNode* node)
 {
   siblings[1] = node;
-}//end Right get
+}
 
 //----END LEAF NODE----

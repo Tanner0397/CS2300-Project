@@ -54,6 +54,6 @@ public:
   void insert(unsigned int const key);
 
 
-};//end of BPlusTree struct
+};
 
 #endif

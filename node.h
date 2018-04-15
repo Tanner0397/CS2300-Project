@@ -53,7 +53,7 @@ public:
   void mark();//For In otder tree traversal
   void unmark();
   bool isMarked();
-};//End of class Node
+};
 
 class leafNode : public Node //leafNode inherits from Node
 {
@@ -67,6 +67,6 @@ public:
   void setLeftSibling(leafNode* node);
   void setRightSibling(leafNode* node);
 
-};//End of Class Leaf Node
+};
 
-#endif //End of preprocessor directive
+#endif 

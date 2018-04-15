@@ -30,7 +30,8 @@ Node* BPlusTree::searchLeaf(Node* node ,unsigned int const key)
       else if(key > node->getKey(i-1) && key <= node->getKey(i))
         return searchLeaf(node->getChild(i), key);
     }
-    return searchLeaf(node->getLastChild(), key);//if we didn't find the right one, it's the last one
+    return searchLeaf(node->getLastChild(), key);
+	//if we didn't find the right one, it's the last one
   }
 }
 
@@ -67,10 +68,14 @@ Node* BPlusTree::split(Node* node, unsigned int const key)
   {
     Node* parent = node->getParent();
     leafNode* newLeaf = new leafNode();
-    newLeaf->setLeftSibling(dynamic_cast<leafNode*>(node));//this node is the left sibling of the node
-    newLeaf->setRightSibling(dynamic_cast<leafNode*>(node)->getRightSibling());//right sibling of the new leaf is old right sibling of the node
-    dynamic_cast<leafNode*>(node)->setRightSibling(newLeaf);//right sibling of the node is the new leaf
-    if(newLeaf->getRightSibling() != nullptr)//if the right siblings isnt null, set the right siblings left siblings as new leaf
+	//this node is the left sibling of the node
+    newLeaf->setLeftSibling(dynamic_cast<leafNode*>(node));
+	//right sibling of the new leaf is old right sibling of the node
+    newLeaf->setRightSibling(dynamic_cast<leafNode*>(node)->getRightSibling());
+	//right sibling of the node is the new leaf
+    dynamic_cast<leafNode*>(node)->setRightSibling(newLeaf);
+	//if the right siblings isnt null, set the right siblings left siblings as new leaf
+    if(newLeaf->getRightSibling() != nullptr)
       newLeaf->getRightSibling()->setLeftSibling(newLeaf);
     newLeaf->insertKey(copy[2]);
     newLeaf->insertKey(copy[3]);//Insert the last two elements of the keys
@@ -177,16 +182,19 @@ void BPlusTree::insertChild(Node* parent, Node* node)
 {
   unsigned int last = node->getLastKey();
   //if we're using the arrange children method the node will have 2 or 3 keys, not one
-  //if a keys size of 1 is encounters, that node was split.
+  //if a key's size of 1 is encounters, that node was split.
   if(parent->getNumKeys() == 1)
   {
-    //If this node has only 1 key, that means it was actually split. This child node may or maynot be the child
-    if(parent->getChild(1) != nullptr && last < parent->getChild(1)->getLastKey())//if this is true, then this is a better child for the node!
+    //If this node has only 1 key, that means it was actually split. 
+	//This child node may or may not be the child
+	//if this is true, then this is a better child for the node!
+    if(parent->getChild(1) != nullptr && last < parent->getChild(1)->getLastKey())
     {
       Node* temp = parent->getChild(1);
       parent->setChild(node, 1);
       //Now I need to find a way to find the node this is suppose to be inserted into
-      Node* newParent = searchLeaf(root, temp->getLastKey())->getParent();//find the parent of the child swapped
+	  //find the parent of the child swapped
+      Node* newParent = searchLeaf(root, temp->getLastKey())->getParent();
       insertChild(newParent, temp);
     }
     else if(parent->getChild(1) == nullptr)
@@ -199,11 +207,13 @@ void BPlusTree::insertChild(Node* parent, Node* node)
     //shift the children
     bool found = false;
     unsigned int position = 0;
-    for(unsigned int i = 0; i <= parent->getNumKeys(); i++)//what position do we need to put this child into?
+	//what position do we need to put this child into?
+    for(unsigned int i = 0; i <= parent->getNumKeys(); i++)
     {
       if(i == 0 && last <= parent->getKey(i))
         position = i;
-      else if(i != parent->getNumKeys() && last > parent->getKey(i-1) && last <= parent->getKey(i))
+      else if(i != parent->getNumKeys() && last > parent->getKey(i-1) &&
+		last <= parent->getKey(i))
         position = i;
       else if(i == parent->getNumKeys() && last > parent->getKey(i-1))
         position = i;
@@ -222,17 +232,17 @@ void BPlusTree::removeChild(Node* parent, Node* node)
 {
 
   if(parent->getNumKeys() == 1)
-  {//This in particular whoudl only be executed when merging with some node
+  {//This in particular would only be executed when merging with some node
     if(node == parent->getChild(0))
     {
       parent->setChild(parent->getChild(1), 0);
       parent->setChild(nullptr, 1);
     }
     else if(node == parent->getChild(1))
-    {//cant delete the key
+    {//can't delete the key
       parent->setChild(nullptr, 1);
     }
-  }//if ther is only one key
+  }//if there is only one key
   else if(parent->getNumKeys() == 2)
   {
     if(node == parent->getChild(0))//node is the first
@@ -245,7 +255,7 @@ void BPlusTree::removeChild(Node* parent, Node* node)
     else if(node == parent->getChild(1))//second
     {
       parent->deleteKeyIndex(1);//remove the second key
-      parent->setChild(parent->getChild(2), 1);//shirt only 1
+      parent->setChild(parent->getChild(2), 1);//shift only 1
       parent->setChild(nullptr, 2);
     }
     else if(node == parent->getChild(2))//second again
@@ -342,7 +352,8 @@ void BPlusTree::insert(unsigned int const key)
   Node* result = BPlusTree::searchKey(key);
   if(result->isMemberOf(key))
   {
-    std::cout << "Key: " << key << " already exist. Ignoring insertion operation." << std::endl;
+    std::cout << "Key: " << key << " already exist. Ignoring insertion operation." 
+		<< std::endl;
     return;
   }
   if(!result->isFull())
@@ -431,7 +442,7 @@ void BPlusTree::print()
 void BPlusTree::moveKey(Node* node, unsigned int const key)
 {
   Node* container = firstInstance(root, key);
-  //if this node is the last child, it actually isnt in the parent. of that node
+  //if this node is the last child, it actually isn't in the parent of that node
   node->deleteKey(key);
   container->deleteKey(key);//remove that old key
   unsigned int newKey = node->getLastKey();//the new key
@@ -445,10 +456,12 @@ void BPlusTree::redistribute(Node* node, Node* sibling, unsigned int const key)
   {
     bool result = false;
     unsigned int oldLastKey = node->getLastKey();
-    unsigned int newKey = sibling->getKey(0);//get the first key, implying this is a right sibling
+	//get the first key, implying this is a right sibling
+    unsigned int newKey = sibling->getKey(0);
     leafNode* leaf = dynamic_cast<leafNode*>(node);
     leafNode* leafSibling = dynamic_cast<leafNode*>(sibling);
-    if(leafSibling == leaf->getLeftSibling())//change to last key if the this is the left sibling
+	//change to last key if the this is the left sibling
+    if(leafSibling == leaf->getLeftSibling())
       newKey = leafSibling->getLastKey();
     Node* container = firstInstance(root, key);
     node->deleteKey(key);
@@ -457,29 +470,37 @@ void BPlusTree::redistribute(Node* node, Node* sibling, unsigned int const key)
     if(result)//if the key was in an internal node
       container->insertKey(node->getLastKey());//insert the last key of the node
     else//this wasn't in in internal node, however an internal node could change!
-    {//here container == node, since it wasn't in an internal node so the first instance is the leaf!
-      unsigned int newLastKey = node->getLastKey();//new last key in node, since it chould change
+    {//here container == node, since it wasn't in an internal node
+	 //so the first instance is the leaf!
+	 
+	 //new last key in node, since it chould change
+      unsigned int newLastKey = node->getLastKey();
       if(oldLastKey != newLastKey)
       {
         if(node != node->getParent()->getLastChild())//if this isn't the last child
         {
-          node->getParent()->deleteKey(oldLastKey);//remove the old last ky from the parent
+          node->getParent()->deleteKey(oldLastKey);//remove the old last key from the parent
           node->getParent()->insertKey(newLastKey);//add the new last key to the parent!
         }
-        else//this is the last child, so replace the key in the internal node that contains the oldLastKey
+        else//this is the last child, so replace the key in the internal node 
+		    //that contains the oldLastKey
         {
           container = firstInstance(root, oldLastKey);
           container->deleteKey(oldLastKey);
           container->insertKey(newLastKey);
-        }//ense else
-      }//edn keys no longer match
+        }
+      }
     }
-    if(leafSibling == leaf->getLeftSibling())//we tood the last key, so we need to remove it from an internal node
+	//we took the last key, so we need to remove it from an internal node
+    if(leafSibling == leaf->getLeftSibling())
     {
-      moveKey(leafSibling, newKey);//this should remove the key from the sibling and and whatever internal node it was in
+	  //this should remove the key from the sibling and and whatever internal node it was in
+      moveKey(leafSibling, newKey);
     }
     else
-      leafSibling->deleteKey(newKey);//just remove that key since it's not in any internal nodes, since it was from the right.
+	  //just remove that key since it's not in any internal nodes,
+      //since it was from the right.
+      leafSibling->deleteKey(newKey);
   }
   else//this is an internal node
   {
@@ -540,7 +561,7 @@ void BPlusTree::merge(Node* node, Node* sibling, unsigned int const key, bool le
       if(right != nullptr)
         merge(parent, right, key, false);//merge it to the right
       else if(left != nullptr)
-        merge(parent, left, key, true);//merge parent with it's left sibling
+        merge(parent, left, key, true);//merge parent with its left sibling
       else
         mergeRoot = true;//Node is going to be the new root when done merging
     }
@@ -560,23 +581,28 @@ void BPlusTree::merge(Node* node, Node* sibling, unsigned int const key, bool le
     }
     Node* parent_last_child = getLastNode(parent);
     Node* first_node_contains_merge = firstInstance(root, mergie->getLastKey());
-    Node* first_node_contains_parent_last = firstInstance(root, parent_last_child->getLastKey());
+    Node* first_node_contains_parent_last =
+		firstInstance(root, parent_last_child->getLastKey());
     Node* old_first_contains = firstInstance(root, old->getLastKey());
-    leafNode* leaf = dynamic_cast<leafNode*>(mergie);//Cast these two so that we can change the siblings later
-    leafNode* leafSibling = dynamic_cast<leafNode*>(old);//For setting the siblings correctly
+	//Cast these two so that we can change the siblings later
+    leafNode* leaf = dynamic_cast<leafNode*>(mergie);
+	//For setting the siblings correctly
+    leafNode* leafSibling = dynamic_cast<leafNode*>(old);
     unsigned int old_last_key = old->getLastKey();
     unsigned int mergie_new_last_key;//Not used yet so it is uninitialized
     unsigned int parent_child_new_last_key;//uninitialized
     unsigned int mergie_old_last_key = mergie->getLastKey();
     unsigned int parent_child_old_last_key = parent_last_child->getLastKey();
-    unsigned int parent_first_last_key = first_node_contains_merge->getLastKey();//used to detect if we merged with an other node
-    unsigned int first_node_contains_merge_last_key = first_node_contains_merge->getLastKey();
+	//used to detect if we merged with an other node
+    unsigned int parent_first_last_key = first_node_contains_merge->getLastKey();
+    unsigned int first_node_contains_merge_last_key =
+		first_node_contains_merge->getLastKey();
 
-    node->deleteKey(key);//we want to relvoe the key first
+    node->deleteKey(key);//we want to remove the key first
 
     //inserting new keys...
     mergie->insertKey(old->getKey(0));
-    if(old == sibling)//here we need two sicne the node being removed is the sibling
+    if(old == sibling)//here we need two since the node being removed is the sibling
       mergie->insertKey(old->getKey(1));
 
     mergie_new_last_key = mergie->getLastKey();
@@ -586,12 +612,14 @@ void BPlusTree::merge(Node* node, Node* sibling, unsigned int const key, bool le
 
     mergie_new_last_key = mergie->getLastKey();
 
-    if(first_node_contains_merge != nullptr && mergie_old_last_key != mergie_new_last_key && first_node_contains_merge != mergie)
+    if(first_node_contains_merge != nullptr && mergie_old_last_key != 
+		mergie_new_last_key && first_node_contains_merge != mergie)
     {
       first_node_contains_merge->deleteKey(mergie_old_last_key);
       first_node_contains_merge->insertKey(mergie_new_last_key);
     }
-    if(old_first_contains != nullptr && first_node_contains_merge != old_first_contains && old_first_contains != old && old_last_key != mergie_new_last_key)
+    if(old_first_contains != nullptr && first_node_contains_merge != old_first_contains && 
+		old_first_contains != old && old_last_key != mergie_new_last_key)
     {
       old_first_contains->deleteKey(old_last_key);
       old_first_contains->insertKey(mergie_new_last_key);
@@ -610,7 +638,7 @@ void BPlusTree::merge(Node* node, Node* sibling, unsigned int const key, bool le
   else//we are merging two internal nodes together.
   {
     parent = node->getParent();
-    //first we need to obtain a good key for insert into the node.
+    //first we need to obtain a good key for insertion into the node.
     Node* mergie = node;
     Node* old = sibling;
     if(leftMerge)
@@ -623,7 +651,8 @@ void BPlusTree::merge(Node* node, Node* sibling, unsigned int const key, bool le
     unsigned int merger_key = mergie->getLastKey();
     unsigned int old_key = old->getLastKey();
     unsigned int parent_key = 0;//initialize
-    unsigned int mergie_new_last_node_last_key = 0;//inintialized since we need to manipulate stuff
+	//initialized since we need to manipulate stuff
+    unsigned int mergie_new_last_node_last_key = 0;
     for(unsigned int i = 0; i < parent->getNumKeys(); i++)
     {
       if(parent->getKey(i) > merger_key)
@@ -632,7 +661,8 @@ void BPlusTree::merge(Node* node, Node* sibling, unsigned int const key, bool le
         break;
       }
     }
-    mergie->insertKey(parent_key);//since we inserted the parent key, we need to remove it from the parent
+	//since we inserted the parent key, we need to remove it from the parent
+    mergie->insertKey(parent_key);
     mergie->insertKey(old_key);
     // parent->deleteKey(parent_key);
     mergie->setChild(old->getChild(0), 2);
@@ -641,8 +671,9 @@ void BPlusTree::merge(Node* node, Node* sibling, unsigned int const key, bool le
     mergie->getChild(3)->setParent(mergie);//set the parents
     mergie_last_node = getLastNode(mergie);
     mergie_new_last_node_last_key = mergie_last_node->getLastKey();
-
-    if(mergie_new_last_node_last_key != mergie_last_node_last_key)//change the parent since the last value of the last node is now different!
+    
+	//change the parent since the last value of the last node is now different!
+    if(mergie_new_last_node_last_key != mergie_last_node_last_key)
     {
       parent->deleteKey(mergie_last_node_last_key);
       parent->insertKey(mergie_new_last_node_last_key);
@@ -666,7 +697,8 @@ void BPlusTree::del(unsigned int const key)
   Node* result = searchKey(key);
   if(!result->isMemberOf(key))
   {
-    std::cout << "Key: " << key << " was not found. Ignoring deletion operation." << std::endl;
+    std::cout << "Key: " << key << " was not found. Ignoring deletion operation." 
+		<< std::endl;
     return;
   }
   Node* parent = nullptr;
@@ -679,7 +711,7 @@ void BPlusTree::del(unsigned int const key)
       leafNode* leaf = dynamic_cast<leafNode*>(result);
       if(leaf->getRightSibling() != nullptr)
         moveKey(result, key);//this will deal with the deletion of the key in this node
-      else//if there is no right sibling, then this actually has no internnode refrence
+      else//if there is no right sibling, then this actually has no internode reference
         result->deleteKey(key);
     }//this is the last key of the node, so it has an entry in an internal node
     else//not the last key so this isn't really a problem
@@ -723,13 +755,15 @@ void BPlusTree::del(unsigned int const key)
         accepted = true;
         merge(result, rightSibling, key, false);
       }//if the right sibling exist
-      if(leftSibling != nullptr && !accepted && result->getParent() == leftSibling->getParent())
+      if(leftSibling != nullptr && !accepted && result->getParent() ==
+		leftSibling->getParent())
       {
         accepted = true;
         merge(result, leftSibling,  key, true);//merge the left with with the node
       }
     }
-    else if(!accepted && result == root)//this was the root all along, we can just remove the key since we can't merge
+	//this was the root all along, we can just remove the key since we can't merge
+    else if(!accepted && result == root)
     {
       result->deleteKey(key);
     }

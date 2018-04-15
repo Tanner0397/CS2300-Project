@@ -13,7 +13,7 @@ int main()
   bool running = true;
   unsigned int counter = 0;
 
-  //inintal tree
+  //initial tree
   tree.insert(12);
   tree.insert(35);
   tree.insert(3);

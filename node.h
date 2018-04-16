@@ -28,10 +28,10 @@ public:
   Node(const Node &node);
   unsigned int getNumKeys();//This will return the number of keys in the node
   std::vector<unsigned int> getKeys();//returns vector of keys
-  unsigned int getKey(int index);//Returns the key value af the given index
+  unsigned int getKey(int index);//Returns the key value of the given index
   unsigned int getLastKey();
   Node* getParent();//get the parent of the node
-  /*Obtain the child at the specified index. 0: leftmost and 3: rightMost*/
+  /*Obtain the child at the specified index. 0: leftmost and 3: right Most*/
   Node* getChild(int index);
   //Obtain a pointer to the last child of the node. Mostly used to find the last node of a tree/subtree
   Node* getLastChild();
@@ -40,7 +40,7 @@ public:
   bool isMemberOf(unsigned int key);//true if this key is a member of this node
   void insertKey(unsigned int const key);//insert a key into a node
   void deleteKeyIndex(int index);//Delete a key in the node at the index
-  //Attempt to delete the exact key from node. Retursn true of successful, othersize it is false
+  //Attempt to delete the exact key from node. Returns true of successful, otherwise it is false
   bool deleteKey(unsigned int const key);
   void clearAllKeys();//clears all the keys in this node
   //set node as this nodes child for index
@@ -50,7 +50,7 @@ public:
   //prints out the current node with it's id. Formatted for graphviz
   std::string print();
   unsigned int getID();//get this nodes unique id
-  void mark();//For In otder tree traversal
+  void mark();//For In order tree traversal
   void unmark();
   bool isMarked();
 };//End of class Node

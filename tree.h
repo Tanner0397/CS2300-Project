@@ -7,9 +7,9 @@ class BPlusTree
 private:
   static unsigned int print_id;
   Node* root;//Root of the tree
-  Node* searchKey(unsigned int const key);//searches for a ndoe that could contain key
-  Node* searchLeaf(Node* node ,unsigned int const key);//recursive fucntion to search
-  Node* firstInstance(Node* node, unsigned int const);//this retuns the first node it finds with this key in it
+  Node* searchKey(unsigned int const key);//searches for a node that could contain key
+  Node* searchLeaf(Node* node ,unsigned int const key);//recursive function to search
+  Node* firstInstance(Node* node, unsigned int const);//this returns the first node it finds with this key in it
   /*Returns pointer to right sibling. Returns null if there is none*/
   Node* findRightSibling(Node* node);
   /*Returns pointer to left sibling. Returns null if there is none*/
@@ -18,8 +18,8 @@ private:
   Used to find what keys need to be replaced when moving and merging internal nodes*/
   Node* getLastNode(Node* node);
   /*Resursive function that will split nodes into 1 more leafNode.
-  An extra internal node is generated if split proagtes to the root.
-  In this implemntation where the degreee of the tree is 4, there will be at msot 3
+  An extra internal node is generated if split propagates to the root.
+  In this implementation where the degree of the tree is 4, there will be at most 3
   keys in any given node so you will split the third key up.*/
   Node* split(Node* node, unsigned int const key);
   /*This inserts a child into a node. A key has been inserted into parent
@@ -31,15 +31,15 @@ private:
   sibling is to the left or to the right. Also handles if node and sibling are internal
   and leaf nodes*/
   void redistribute(Node* node, Node* sibling, unsigned int const key);
-  /*Resursive function that merges two nodes togther. We only want to merge two nodes if
+  /*Recursive function that merges two nodes together. We only want to merge two nodes if
   they share same parent. We have a leftMerge boolean to use in the case that sibling is
   to the left of node. In that case some things may change because we may need to look in
   different places to find the keys in internal nodes that need to change*/
   void merge(Node* node, Node* sibling, unsigned int const key, bool leftMerge);
-  /*auxiliiary function for redistribute so that when a key is moved some leaf node, it is
+  /*auxiliary function for redistribute so that when a key is moved some leaf node, it is
   reflected in the internal nodes*/
   void moveKey(Node* node, unsigned int const key);
-  /*The following functions are recursive functions that perform a inorder tree traversal so that
+  /*The following functions are recursive functions that perform a in order tree traversal so that
   we can output the nodes to an image via graphviz. */
   void outputNodes(Node* node, std::ofstream &buffer);
   void outputLinks(Node* node, std::ofstream &buffer);
@@ -54,6 +54,6 @@ public:
   void insert(unsigned int const key);
 
 
-};//end of BPlusTree struct
+};
 
 #endif
